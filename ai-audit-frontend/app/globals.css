@@ -1,0 +1,43 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --color-exl-orange: #E8400C;
+  --color-orange-deep: #C4320A;
+  --color-orange-light: #F26335;
+  --color-warm-tint: #FFF4F0;
+  --color-sidebar: #181A20;
+  --color-chat-bg: #F5F5F7;
+  --color-surface: #FFFFFF;
+  --color-text-primary: #0D0D12;
+  --color-text-secondary: #4A4A5A;
+  --color-active-green: #10B981;
+}
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  background-color: var(--color-chat-bg);
+  color: var(--color-text-primary);
+}
+
+/* Custom modern scrollbar for the chat area */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
