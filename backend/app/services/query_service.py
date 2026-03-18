@@ -27,10 +27,37 @@ def handle_query(chat_id, question, preFilters, llm):
 
         title = llm.generate(title_messages)
         update_chat_title(chat_id, title)
-    context = build_context(history)
+    # Give context of previous messages only (exclude current question which is added in sql_service)
+    context = build_context(history[:-1])
+
+    # INTENT ROUTER
+    intent_messages = [
+        {"role": "system", "content": "You are a clinical audit query router. Read the user's message. Does it require querying the clinical audit database for statistics, trends, quality scores, employee metrics, or data? If YES, reply strictly with the single word 'DATABASE'. If it is a casual greeting, a meta-question about yourself, or general conversation, reply strictly with 'CONVERSATION'."},
+        {"role": "user", "content": question}
+    ]
+    intent = llm.generate(intent_messages).strip().upper()
+
+    if "CONVERSATION" in intent:
+        conv_sys = "You are a helpful Clinical Audit AI Assistant. The user sent a conversational message. Greet them, ask how you can help, and suggest 3 example analytical questions they could ask about their clinical audit data (e.g. employee performance, root causes, quality trends). Format the response as a friendly markdown message. Provide EXACTLY 3 numbered suggestions under a 'Suggested Follow-ups' header."
+        conv_messages = [{"role": "system", "content": conv_sys}]
+        conv_messages.extend(context)
+        conv_messages.append({"role": "user", "content": question})
+        
+        answer = llm.generate(conv_messages)
+        save_message(chat_id, "assistant", answer, None, None)
+        return {
+            "answer": answer,
+            "sql": None,
+            "data": [],
+            "chart": None,
+            "chartType": None,
+            "xKey": None,
+            "yKey": None
+        }
 
     # Generate SQL
     # STEP 1: Generate SQL (with context)
+    sql = None
     sql = generate_sql(llm, question, context=context)
 
     # STEP 2: Execute with retry
