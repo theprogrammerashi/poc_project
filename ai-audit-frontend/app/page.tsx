@@ -72,7 +72,7 @@ export default function Home() {
         id: (Date.now() + 1).toString(),
         role: "assistant",
         content: data.answer || "No response received.",
-        sqlQuery: showFilters ? data.sql : undefined,
+        sqlQuery: data.sql,
         chartPath: data.chart ? `http://localhost:8000/${data.chart}` : undefined,
         tableData: data.data && data.data.length > 0 ? data.data.slice(0, 50) : undefined
       };
