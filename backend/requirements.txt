@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+duckdb
+pandas
+python-dotenv
+google-generativeai
+plotly
