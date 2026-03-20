@@ -75,7 +75,7 @@ export default function QuerySection() {
         className="max-w-6xl mx-auto"
       >
         <div className="text-center mb-16">
-          <p className="text-exl-orange text-xs font-bold tracking-[0.2em] uppercase mb-4 flex items-center justify-center">
+          <p className="text-exl-orange text-sm font-bold tracking-[0.2em] uppercase mb-4 flex items-center justify-center">
             <span className="w-12 h-px bg-gray-200 mr-4"></span>
             TRY THESE QUERIES
             <span className="w-12 h-px bg-gray-200 ml-4"></span>

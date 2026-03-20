@@ -95,7 +95,7 @@ export default function FeatureSection() {
         className="max-w-7xl mx-auto"
       >
         <div className="text-center mb-10">
-          <p className="text-exl-orange text-xs font-bold tracking-[0.2em] uppercase mb-3 flex items-center justify-center">
+          <p className="text-exl-orange text-sm font-bold tracking-[0.2em] uppercase mb-3 flex items-center justify-center">
             <span className="w-12 h-px bg-gray-200 mr-4"></span>
             WHAT IT DOES
             <span className="w-12 h-px bg-gray-200 ml-4"></span>
@@ -148,13 +148,13 @@ export default function FeatureSection() {
                 <h3 className="text-[15px] font-bold font-jakarta text-text-primary mb-1.5 leading-tight">
                   {feature.title}
                 </h3>
-                <p className="text-[12px] text-gray-500 mb-4 leading-tight">
+                <p className="text-[13px] font-medium text-gray-700 mb-4 leading-tight">
                   {feature.desc}
                 </p>
                 
                 <ul className="space-y-1.5 mb-5 flex-1">
                   {feature.bullets.map((bullet, idx) => (
-                    <li key={idx} className="flex items-start text-[12px] text-gray-600 leading-tight">
+                    <li key={idx} className="flex items-start text-[13px] font-medium text-gray-700 leading-tight">
                       <span className={`w-1 h-1 rounded-full mt-1.5 mr-2.5 flex-shrink-0 ${feature.colorClass}`}></span>
                       {bullet}
                     </li>

@@ -7,11 +7,8 @@ export default function Navbar() {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 h-[76px] flex items-center justify-between px-6 md:px-12 bg-white/90 backdrop-blur-[22px] saturate-[1.4] border-b border-gray-100">
       <div className="flex items-center gap-3">
-        <div className="bg-exl-orange text-white rounded-xl w-10 h-10 flex items-center justify-center shadow-md shadow-exl-orange/20">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-          </svg>
+        <div className="bg-exl-orange text-white rounded-[10px] w-10 h-10 flex items-center justify-center shadow-md shadow-exl-orange/20 font-bold text-[14px] tracking-wide">
+          EXL
         </div>
         <h1 className="text-[22px] font-jakarta font-[800] text-text-primary tracking-tight flex items-center">
           Clinical Audit<span className="text-exl-orange">.ai</span>

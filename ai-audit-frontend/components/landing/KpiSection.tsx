@@ -20,7 +20,7 @@ const KPI_DATA = [
   },
   {
     id: 2,
-    title: "NQBA REVIEW",
+    title: "NCQA REVIEW",
     value: 95.8,
     suffix: "%",
     change: "-0.8%",

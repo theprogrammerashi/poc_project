@@ -55,7 +55,7 @@ export default function AnalysisSection() {
       >
          {/* Title Area */}
          <div className="text-center mb-12">
-            <h4 className="text-exl-orange text-xs font-bold tracking-[0.2em] uppercase mb-4 flex items-center justify-center gap-4">
+            <h4 className="text-exl-orange text-sm font-bold tracking-[0.2em] uppercase mb-4 flex items-center justify-center gap-4">
               <span className="w-8 h-px bg-exl-orange/50"></span>
               INSIGHTS
               <span className="w-8 h-px bg-exl-orange/50"></span>
