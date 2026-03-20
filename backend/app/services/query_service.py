@@ -32,12 +32,12 @@ def handle_query(chat_id, question, preFilters, llm):
 
     # INTENT ROUTER
     intent_messages = [
-        {"role": "system", "content": "You are a clinical audit query router. Read the user's message. Does it require querying the clinical audit database for statistics, trends, quality scores, employee metrics, or data? If YES, reply strictly with the single word 'DATABASE'. If it is a casual greeting, a meta-question about yourself, or general conversation, reply strictly with 'CONVERSATION'."},
+        {"role": "system", "content": "You are a routing assistant. Is the user asking an analytical question about clinical audit data, scores, or employees? Reply ONLY with the word 'DATABASE'. If they are saying hi, asking how you are, or chatting, reply ONLY with the word 'CONVERSATION'."},
         {"role": "user", "content": question}
     ]
     intent = llm.generate(intent_messages).strip().upper()
 
-    if "CONVERSATION" in intent:
+    if "DATABASE" not in intent:
         conv_sys = "You are a helpful Clinical Audit AI Assistant. The user sent a conversational message. Greet them, ask how you can help, and suggest 3 example analytical questions they could ask about their clinical audit data (e.g. employee performance, root causes, quality trends). Format the response as a friendly markdown message. Provide EXACTLY 3 numbered suggestions under a 'Suggested Follow-ups' header."
         conv_messages = [{"role": "system", "content": conv_sys}]
         conv_messages.extend(context)
@@ -58,10 +58,10 @@ def handle_query(chat_id, question, preFilters, llm):
     # Generate SQL
     # STEP 1: Generate SQL (with context)
     sql = None
-    sql = generate_sql(llm, question, context=context)
-
+    
     # STEP 2: Execute with retry
     try:
+        sql = generate_sql(llm, question, context=context)
         with get_connection() as con:
             df = con.execute(sql).df()
     except Exception as e:
@@ -85,43 +85,43 @@ def handle_query(chat_id, question, preFilters, llm):
             }
 
     # Chart
-    # STEP: Ask LLM for chart decision
-    chart_prompt = f"""
-    You are a data visualization expert.
+    chart_path = None
+    chart_type = None
+    x_col = None
+    y_col = None
 
-    Given:
-    Columns: {list(df.columns)}
-    Sample Data:
-    {df.head(5).to_string()}
+    if not df.empty and df.shape[1] >= 2:
+        # STEP: Ask LLM for chart decision
+        chart_prompt = f"""
+        You are a data visualization expert.
 
-    Suggest:
-    - chart_type (bar, line, pie, scatter)
-    - x column
-    - y column
+        Given:
+        Columns: {list(df.columns)}
+        Sample Data:
+        {df.head(5).to_string()}
 
-    Return in JSON:
-    {{"chart": "", "x": "", "y": ""}}
-    """
+        Suggest:
+        - chart_type (bar, line, pie, scatter)
+        - x column
+        - y column
 
-    chart_decision = llm.generate([{"role": "system", "content": chart_prompt}])
+        Return in JSON:
+        {{"chart": "", "x": "", "y": ""}}
+        """
 
-    try:
-        if df.shape[1] >= 2:
+        chart_decision = llm.generate([{"role": "system", "content": chart_prompt}])
+
+        try:
             chart_info = json.loads(chart_decision)
             chart_path = generate_chart(df, chart_info)
             chart_type = chart_info.get("chart", "bar")
             x_col = chart_info.get("x", df.columns[0])
             y_col = chart_info.get("y", df.columns[1])
-        else:
-            chart_path = None
-            chart_type = None
-            x_col = None
-            y_col = None
-    except:
-        chart_path = generate_chart(df)  # fallback
-        chart_type = "bar" if df.shape[1] >= 2 else None
-        x_col = df.columns[0] if df.shape[1] >= 2 else None
-        y_col = df.columns[1] if df.shape[1] >= 2 else None
+        except:
+            chart_path = generate_chart(df)  # fallback
+            chart_type = "bar"
+            x_col = df.columns[0]
+            y_col = df.columns[1]
 
     # Answer generation (FIXED)
     messages = [

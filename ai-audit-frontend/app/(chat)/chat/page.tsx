@@ -1,11 +1,12 @@
 "use client";
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, Suspense } from "react";
 import { Send, Menu, Paperclip, ArrowRight } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import ChatMessage, { MessageType } from "@/components/ChatMessage";
 import SuggestedPrompts from "@/components/SuggestedPrompts";
 
-export default function Home() {
+function ChatContent() {
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<MessageType[]>([]);
@@ -35,6 +36,20 @@ export default function Home() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  const searchParams = useSearchParams();
+  const initQueryProcessed = useRef(false);
+
+  // Handle initial query from URL search params (e.g. from Landing Page)
+  useEffect(() => {
+    const q = searchParams?.get("q");
+    if (q && !initQueryProcessed.current) {
+      initQueryProcessed.current = true;
+      setTimeout(() => {
+        processUserMessage(q);
+      }, 500); 
+    }
+  }, [searchParams]);
 
   // Handle sending a message
   const processUserMessage = async (text: string) => {
@@ -246,5 +261,13 @@ export default function Home() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div className="h-screen w-screen bg-[#F0F2F5] flex items-center justify-center text-gray-500 font-jakarta font-medium">Loading Chat...</div>}>
+      <ChatContent />
+    </Suspense>
   );
 }

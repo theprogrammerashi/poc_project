@@ -4,7 +4,7 @@ import os
 
 def generate_chart(df, chart_info=None):
 
-    if df.shape[1] < 2:
+    if df.empty or df.shape[1] < 2:
         return None
 
     os.makedirs("charts", exist_ok=True)

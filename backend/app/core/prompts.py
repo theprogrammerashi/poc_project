@@ -24,6 +24,8 @@ UNDERSTAND USER INTENT:
 - "trend", "monthly", "over time" → GROUP BY time column
 - "compare", "vs" → multiple aggregations
 - "top N" → use LIMIT N
+- If asked about "root causes" generally (most common, breakdown, etc.), you MUST unnest all root_case columns like this: 
+  SELECT root_cause, COUNT(*) as count FROM (SELECT UNNEST(LIST_VALUE("root_case_documentation_completeness", "root_case_knowledge_gaps", "root_case_timely_decisions", "root_case_appropriate_care", "root_case_peer_review_quality", "root_case_value_based_outcomes")) AS root_cause FROM audits [WHERE clause if needed]) WHERE root_cause IS NOT NULL GROUP BY root_cause
 
 HANDLING TIME:
 - If user mentions Q1/Q2/Q3/Q4 → filter "Quarter"

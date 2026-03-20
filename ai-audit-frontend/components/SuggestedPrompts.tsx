@@ -3,6 +3,17 @@
 import React, { useEffect, useState } from 'react';
 import { ClipboardList, BarChart2, AlertCircle, CheckCircle2, Users, Activity, FileWarning, Search, TrendingUp, MessageSquarePlus } from 'lucide-react';
 
+const suggestions = [
+    { category: "Score Analysis", color: "bg-[#00828A]", text: "Which employees have the lowest overall audit scores this quarter?" },
+    { category: "Root Cause", color: "bg-[#6A2B86]", text: "What is the most common root cause of audit failures in Q3?" },
+    { category: "Element Analysis", color: "bg-[#D35400]", text: "Which audit elements are failing most frequently across UM program?" },
+    { category: "Trending", color: "bg-[#1A5276]", text: "Show me the trend of quality scores for Medicare line of business over 2025." },
+    { category: "Team View", color: "bg-[#BA4A00]", text: "Which supervisor's team has the most 'Documentation' root cause failures?" },
+    { category: "Threshold", color: "bg-[#CB4335]", text: "How many records scored below 75 and what recommendations were given?" },
+    { category: "Comparison", color: "bg-[#117A65]", text: "Compare HealthTrack vs CareFlow application audit performance." },
+    { category: "Recommendations", color: "bg-[#1E8449]", text: "What percentage of records had a 'Training' recommendation in Q1?"}
+];
+
 export default function SuggestedPrompts({ filters, onSuggestionClick }: { filters?: any, onSuggestionClick?: (q: string) => void }) {
     const [metrics, setMetrics] = useState({
         totalRecords: 20000,
@@ -40,7 +51,7 @@ export default function SuggestedPrompts({ filters, onSuggestionClick }: { filte
                     </div>
                     <div className="flex flex-col justify-center h-[60px]">
                         <h2 className="text-[25px] font-bold text-text-primary leading-[1.2] tracking-tight">Welcome to Clinical Audit AI</h2>
-                        <p className="text-[14px] text-text-secondary font-medium mt-1">EXL Audit Intelligence Platform · {metrics.totalRecords.toLocaleString()} Records</p>
+                        <p className="text-[14px] text-text-secondary font-medium mt-1">EXL Audit Intelligence Platform</p>
                     </div>
                 </div>
 
@@ -105,17 +116,9 @@ export default function SuggestedPrompts({ filters, onSuggestionClick }: { filte
 
             {/* Capabilities Card */}
             <div className="w-full text-left bg-surface border border-gray-200 border-l-4 border-l-exl-orange rounded-r-[20px] rounded-l-md p-6 lg:p-8 shadow-sm">
-                <h3 className="text-[11px] font-bold tracking-[0.05em] text-exl-orange mb-5 flex items-center gap-2">
-                    EXL QA ASSISTANT
-                </h3>
-
-                <p className="text-[15px] font-medium text-text-primary mb-6 flex items-center gap-2">
-                    <span className="text-xl">👋</span> Welcome! I'm your <strong className="text-exl-orange font-[600]">EXL-powered Quality Intelligence Assistant</strong> for Clinical Audit.
-                </p>
-
                 <p className="text-[15px] text-text-primary font-medium mb-4">I can help you analyze:</p>
 
-                <ul className="space-y-3 mb-6">
+                <ul className="space-y-3 mb-8">
                     <li className="flex items-center gap-3 text-[14px] text-text-primary font-[500]">
                         <Activity size={18} strokeWidth={2.5} className="text-exl-orange flex-shrink-0 drop-shadow-sm" />
                         <span><strong className="text-exl-orange">Employee quality scores</strong> and performance trends</span>
@@ -138,8 +141,27 @@ export default function SuggestedPrompts({ filters, onSuggestionClick }: { filte
                     </li>
                 </ul>
 
-                <p className="text-[14px] text-text-secondary mt-6 pt-5 border-t border-gray-100">
-                    Type your query Below !!
+                <p className="text-[15px] text-text-primary font-medium mb-5 pt-6 border-t border-gray-100">You can ask me:</p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    {suggestions.map((item, idx) => (
+                        <div 
+                            key={idx} 
+                            onClick={() => onSuggestionClick && onSuggestionClick(item.text)}
+                            className="bg-white border border-gray-200 shadow-sm relative pt-11 pb-6 px-6 cursor-pointer hover:shadow-md hover:border-exl-orange/40 transition-all rounded-sm group"
+                        >
+                            <div className={`absolute top-0 left-0 ${item.color} text-white text-[11px] font-bold px-4 py-1.5 tracking-wider`}>
+                                {item.category}
+                            </div>
+                            <p className="text-[14.5px] text-text-primary/90 italic font-medium leading-relaxed group-hover:text-exl-orange transition-colors">
+                                "{item.text}"
+                            </p>
+                        </div>
+                    ))}
+                </div>
+
+                <p className="text-[14px] text-text-secondary mt-8 text-center font-medium">
+                    Or You can Type your query Below !!
                 </p>
             </div>
         </div>

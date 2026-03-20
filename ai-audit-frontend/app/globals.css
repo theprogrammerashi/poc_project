@@ -2,6 +2,9 @@
 @plugin "@tailwindcss/typography";
 
 @theme {
+  --font-jakarta: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-instrument: var(--font-instrument), ui-serif, Georgia, serif;
+  
   --color-exl-orange: #E8400C;
   --color-orange-deep: #C4320A;
   --color-orange-light: #F26335;
@@ -12,6 +15,21 @@
   --color-text-primary: #0D0D12;
   --color-text-secondary: #4A4A5A;
   --color-active-green: #10B981;
+  
+  --color-score-excellent: #15803d; /* dark green */
+  --color-score-good: #84cc16; /* lime green */
+  --color-score-needs-attention: #f59e0b; /* amber */
+  --color-score-critical: #ef4444; /* red */
+}
+
+@utility bg-stripe-pattern {
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 4px,
+    rgba(255, 255, 255, 0.1) 4px,
+    rgba(255, 255, 255, 0.1) 8px
+  );
 }
 
 :root {
