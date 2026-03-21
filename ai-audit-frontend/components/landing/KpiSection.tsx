@@ -36,7 +36,7 @@ const KPI_DATA = [
     suffix: "k",
     change: "",
     trend: "neutral",
-    trendText: "Full year 2026",
+    trendText: "Full year 2025",
     color: "border-t-[3px] border-t-blue-500",
     icon: <FileText size={16} className="text-gray-400" />
   }
