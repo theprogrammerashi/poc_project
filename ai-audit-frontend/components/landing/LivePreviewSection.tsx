@@ -29,19 +29,45 @@ ChartJS.register(
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-// Seeded random data generator so graph looks different per LOB/Program but stable for the same combo
-const generateData = (lob: string, program: string) => {
-  const seed = lob.length * 3 + program.length * 7 + lob.charCodeAt(0) + program.charCodeAt(0);
+// Hardcoded aggregated data directly from DuckDB for 2025
+const UI_DATA: Record<string, { scores: number[], counts: number[] }> = {
+  "All LOBs|All Programs": { scores: [81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81], counts: [1659, 1706, 1675, 1600, 1620, 1662, 1655, 1670, 1635, 1743, 1717, 1658] },
+  "All LOBs|AIA": { scores: [81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81], counts: [427, 431, 411, 409, 392, 419, 419, 422, 398, 455, 408, 373] },
+  "All LOBs|CCS": { scores: [81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81], counts: [394, 406, 427, 404, 406, 406, 407, 417, 410, 433, 438, 432] },
+  "All LOBs|CCSO": { scores: [81, 81, 81, 81, 81, 80, 81, 81, 81, 81, 81, 81], counts: [410, 460, 403, 406, 412, 423, 421, 405, 386, 443, 416, 381] },
+  "All LOBs|UM": { scores: [81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81], counts: [428, 409, 434, 381, 410, 414, 408, 426, 441, 412, 455, 472] },
+  "Commercial|All Programs": { scores: [81, 81, 81, 81, 81, 81, 80, 81, 81, 81, 81, 81], counts: [421, 390, 413, 400, 384, 394, 445, 400, 397, 442, 411, 411] },
+  "Commercial|AIA": { scores: [81, 81, 81, 81, 81, 80, 80, 81, 80, 81, 81, 81], counts: [103, 125, 95, 91, 97, 101, 109, 102, 98, 113, 89, 97] },
+  "Commercial|CCS": { scores: [81, 80, 81, 81, 81, 81, 80, 81, 81, 81, 81, 80], counts: [105, 73, 99, 99, 99, 102, 103, 99, 100, 106, 102, 102] },
+  "Commercial|CCSO": { scores: [81, 81, 82, 81, 81, 81, 80, 81, 81, 81, 80, 82], counts: [106, 98, 93, 117, 91, 101, 118, 103, 94, 115, 110, 83] },
+  "Commercial|UM": { scores: [81, 81, 81, 81, 81, 81, 80, 81, 81, 81, 80, 81], counts: [107, 94, 126, 93, 97, 90, 115, 96, 105, 108, 110, 129] },
+  "DSNP|All Programs": { scores: [81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81], counts: [412, 425, 429, 395, 420, 432, 384, 421, 390, 432, 448, 430] },
+  "DSNP|AIA": { scores: [81, 81, 81, 81, 81, 81, 80, 80, 81, 81, 80, 81], counts: [112, 92, 108, 107, 103, 113, 100, 97, 89, 100, 114, 91] },
+  "DSNP|CCS": { scores: [81, 81, 80, 81, 81, 80, 81, 80, 82, 81, 81, 81], counts: [95, 109, 115, 103, 108, 102, 84, 100, 99, 127, 128, 120] },
+  "DSNP|CCSO": { scores: [81, 80, 81, 80, 82, 80, 82, 81, 81, 81, 81, 81], counts: [105, 127, 105, 91, 103, 113, 106, 110, 103, 113, 90, 96] },
+  "DSNP|UM": { scores: [81, 80, 80, 81, 82, 81, 80, 81, 80, 81, 81, 80], counts: [100, 97, 101, 94, 106, 104, 94, 114, 99, 92, 116, 123] },
+  "IFP|All Programs": { scores: [81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81], counts: [409, 448, 421, 375, 425, 434, 433, 419, 412, 434, 448, 415] },
+  "IFP|AIA": { scores: [81, 81, 81, 81, 81, 81, 82, 80, 81, 81, 81, 81], counts: [101, 105, 106, 114, 86, 104, 117, 110, 104, 117, 99, 98] },
+  "IFP|CCS": { scores: [81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 80], counts: [99, 112, 112, 99, 101, 116, 105, 108, 100, 94, 109, 107] },
+  "IFP|CCSO": { scores: [81, 81, 81, 81, 80, 81, 80, 82, 81, 82, 81, 80], counts: [94, 109, 97, 75, 125, 102, 120, 94, 89, 107, 113, 99] },
+  "IFP|UM": { scores: [81, 81, 80, 81, 81, 81, 81, 80, 81, 81, 81, 82], counts: [115, 122, 106, 87, 113, 112, 91, 107, 119, 116, 127, 111] },
+  "Medicare|All Programs": { scores: [81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81], counts: [417, 443, 412, 430, 391, 402, 393, 430, 436, 435, 410, 402] },
+  "Medicare|AIA": { scores: [81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 81, 80], counts: [111, 109, 102, 97, 106, 101, 93, 113, 107, 125, 106, 87] },
+  "Medicare|CCS": { scores: [81, 81, 81, 81, 81, 80, 81, 81, 81, 81, 82, 81], counts: [95, 112, 101, 103, 98, 86, 115, 110, 111, 106, 99, 103] },
+  "Medicare|CCSO": { scores: [81, 81, 81, 81, 81, 80, 81, 81, 81, 81, 82, 81], counts: [105, 126, 108, 123, 93, 107, 77, 98, 100, 108, 103, 103] },
+  "Medicare|UM": { scores: [81, 80, 81, 81, 81, 81, 81, 81, 81, 80, 81, 81], counts: [106, 96, 101, 107, 94, 108, 108, 109, 118, 96, 102, 109] },
+};
+
+const getRealData = (lob: string, program: string) => {
+  const key = `${lob}|${program}`;
+  const data = UI_DATA[key] || UI_DATA["All LOBs|All Programs"];
   
-  const heatmapData = MONTHS.map((month, i) => {
-     const modifier = Math.sin(seed + i) * 18;
-     const score = Math.max(70, Math.min(100, Math.round(85 + modifier)));
-     return { month, score };
-  });
-
-  const lineData = Array.from({length: 12}).map((_, i) => Math.abs(Math.round(150 + Math.cos(seed * i) * 80 + (seed * 1.5))));
-
-  return { heatmapData, lineData };
+  const heatmapData = MONTHS.map((month, i) => ({
+    month,
+    score: data.scores[i]
+  }));
+  
+  return { heatmapData, lineData: data.counts };
 };
 
 const getScoreColor = (score: number) => {
@@ -58,8 +84,8 @@ export default function LivePreviewSection() {
   const [selectedLOB, setSelectedLOB] = useState("Commercial");
   const [selectedProgram, setSelectedProgram] = useState("AIA");
   
-  // Dynamically generated static data based on selections
-  const { heatmapData, lineData } = generateData(selectedLOB, selectedProgram);
+  // Dynamically pulled static real data based on selections
+  const { heatmapData, lineData } = getRealData(selectedLOB, selectedProgram);
 
   const handleViewportEnter = () => {
     setChartRendered(true);

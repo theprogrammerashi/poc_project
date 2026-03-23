@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useEffect, useCallback, Suspense } from "react";
-import { Send, Menu, Paperclip, ArrowRight } from "lucide-react";
+import { Send, Menu, Paperclip, ArrowRight, Home as HomeIcon } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Sidebar from "@/components/Sidebar";
@@ -193,7 +193,7 @@ function ChatContent() {
             </button>
             <div className="flex items-center gap-4">
               <Link href="/" className="bg-exl-orange text-white rounded-xl w-10 h-10 flex items-center justify-center shadow-md shadow-exl-orange/20 hover:scale-105 transition-transform cursor-pointer">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                <HomeIcon size={20} className="w-5 h-5" strokeWidth={2} />
               </Link>
               <div className="flex flex-col justify-center">
                 <h1 className="text-[17px] font-bold text-text-primary leading-[1.2] tracking-tight">
