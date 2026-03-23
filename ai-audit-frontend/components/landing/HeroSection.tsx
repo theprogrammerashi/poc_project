@@ -49,6 +49,15 @@ export default function HeroSection() {
     return () => clearTimeout(timeout);
   }, [placeholderText, isDeleting, suggestionIdx]);
 
+  useEffect(() => {
+    const handleSetQuery = (e: CustomEvent<string>) => {
+      setQuery(e.detail);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    window.addEventListener('setHeroQuery', handleSetQuery as EventListener);
+    return () => window.removeEventListener('setHeroQuery', handleSetQuery as EventListener);
+  }, []);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {

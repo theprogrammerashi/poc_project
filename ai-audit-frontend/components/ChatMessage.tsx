@@ -1,6 +1,7 @@
-import { User } from "lucide-react";
+import { User, TableProperties } from "lucide-react";
 import DynamicChart from "./DynamicChart";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { useMemo } from "react";
 
 export type MessageType = {
@@ -10,6 +11,7 @@ export type MessageType = {
     tableData?: any[];
     sqlQuery?: string;
     chartPath?: string;
+    visualizations?: any[];
 };
 
 function extractFollowUps(content: string): string[] {
@@ -29,10 +31,13 @@ function extractFollowUps(content: string): string[] {
 }
 
 function stripSections(content: string): string {
+    // Clean "## Data Table" heading but KEEP the content below it
+    let cleaned = content.replace(/##\s*Data\s*Table\s*(\n|$)/gi, "");
     // Remove "Data Summary" section
-    let cleaned = content.replace(/##\s*Data\s*Summary\s*\n[\s\S]*?(?=\n##|$)/gi, "");
+    cleaned = cleaned.replace(/##\s*Data\s*Summary\s*\n[\s\S]*?(?=\n##|$)/gi, "");
     // Remove "Suggested Follow-ups" section (we render them as chips instead)
     cleaned = cleaned.replace(/##\s*Suggested\s*Follow[- ]?ups?\s*\n[\s\S]*?(?=\n##|$)/gi, "");
+    
     // Clean legacy prompt artifacts
     cleaned = cleaned
         .replace(/FINAL ANSWER:\s*/i, "")
@@ -53,7 +58,7 @@ export default function ChatMessage({ message, onFollowUpClick }: { message: Mes
                 
                 <div className="flex-shrink-0 mt-1">
                     {isUser ? (
-                        <div className="w-8 h-8 bg-sidebar rounded-full flex items-center justify-center text-white text-xs font-bold shadow-sm">
+                        <div className="w-8 h-8 bg-exl-orange rounded-full flex items-center justify-center text-white text-xs font-bold shadow-sm">
                             AS
                         </div>
                     ) : (
@@ -67,19 +72,67 @@ export default function ChatMessage({ message, onFollowUpClick }: { message: Mes
                     
                     {/* Message Content (Markdown for AI, Plain text for User) */}
                     {isUser ? (
-                        <div className="bg-[#1F222A] text-white px-5 py-3.5 rounded-2xl rounded-tr-sm shadow-sm text-[15px] leading-relaxed">
+                        <div className="bg-exl-orange/10 text-gray-900 font-bold px-5 py-3.5 rounded-2xl rounded-tr-sm shadow-sm text-[15px] leading-relaxed border border-exl-orange/20">
                             {message.content}
                         </div>
                     ) : (
                         <div className="prose prose-sm max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-text-primary prose-p:text-text-primary prose-p:leading-relaxed prose-p:text-[15px] prose-a:text-exl-orange prose-strong:text-text-primary prose-strong:font-bold prose-ul:my-2 prose-li:my-0.5 prose-li:text-[14px]">
-                            <ReactMarkdown>
+                            <ReactMarkdown
+                                remarkPlugins={[remarkGfm]}
+                                components={{
+                                    table: ({node, ...props}) => (
+                                        <div className="my-6 border border-gray-100 bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] overflow-hidden">
+                                            <div className="px-5 py-4 flex items-center gap-2">
+                                                 <TableProperties className="w-4 h-4 text-text-secondary" />
+                                                 <h4 className="text-[11px] font-bold tracking-[0.06em] text-text-secondary uppercase m-0 leading-none">Data Table</h4>
+                                            </div>
+                                            <div className="overflow-x-auto">
+                                                <table className="w-full text-left border-collapse" {...props} />
+                                            </div>
+                                        </div>
+                                    ),
+                                    thead: ({node, ...props}) => <thead className="bg-[#FAFAFA]/50 border-y border-gray-100/60" {...props} />,
+                                    tr: ({node, ...props}) => <tr className="border-b border-gray-50 last:border-none hover:bg-gray-50/50 transition-colors" {...props} />,
+                                    th: ({node, ...props}) => <th className="px-5 py-4 text-[11px] font-bold tracking-[0.05em] text-text-primary uppercase whitespace-nowrap" {...props} />,
+                                    td: ({node, ...props}) => <td className="px-5 py-4 text-[13px] text-text-secondary whitespace-nowrap" {...props} />,
+                                }}
+                            >
                                 {displayContent}
                             </ReactMarkdown>
                         </div>
                     )}
 
-                    {/* Render Chart if exists */}
-                    {!isUser && message.chartPath && (
+                    {/* Render new Recharts visualisations from backend2 */}
+                    {!isUser && message.visualizations && message.visualizations.length > 0 && (
+                        <div className="mt-6 flex flex-col gap-6">
+                            {message.visualizations.map((vis: any, idx: number) => (
+                                <div key={idx} className="bg-white rounded-3xl border border-gray-100 shadow-[0_4px_24px_rgba(0,0,0,0.02)] overflow-hidden">
+                                     <div className="p-6 pb-5 flex items-start justify-between">
+                                        <div className="flex flex-col gap-1.5">
+                                            <h4 className="text-[17px] font-bold tracking-tight text-text-primary flex items-center gap-2.5">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-exl-orange">
+                                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                                                </svg>
+                                                {vis.title}
+                                            </h4>
+                                            {vis.rationale && <p className="text-[14px] text-gray-400 font-medium">{vis.rationale}</p>}
+                                        </div>
+                                        <div className="flex-shrink-0 ml-4">
+                                            <span className="inline-flex items-center px-3 py-1.5 rounded-xl bg-exl-orange/10 text-exl-orange text-[12px] font-bold tracking-wide uppercase">
+                                                {vis.type}
+                                            </span>
+                                        </div>
+                                     </div>
+                                     <div className="border-t border-gray-50 bg-white px-2 pt-6 pb-4">
+                                        <DynamicChart type={vis.type} data={vis.data} xKey={vis.xKey} yKey={vis.series?.[0]?.key} />
+                                     </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Render Legacy Chart if exists */}
+                    {!isUser && message.chartPath && (!message.visualizations || message.visualizations.length === 0) && (
                         <div className="mt-6 bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
                              <h4 className="text-[12px] font-bold tracking-[0.05em] text-text-secondary mb-4 uppercase flex items-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
@@ -91,29 +144,6 @@ export default function ChatMessage({ message, onFollowUpClick }: { message: Mes
                         </div>
                     )}
 
-                    {/* Render Table if exists */}
-                    {!isUser && message.tableData && message.tableData.length > 0 && (
-                        <div className="mt-4 overflow-x-auto rounded-xl border border-gray-200">
-                            <table className="w-full text-sm text-left text-text-secondary">
-                                <thead className="text-[11px] uppercase tracking-wider bg-gray-50 border-b border-gray-200 font-bold">
-                                    <tr>
-                                        {Object.keys(message.tableData[0]).map((key) => (
-                                            <th key={key} className="px-5 py-3 font-semibold text-text-primary">{key}</th>
-                                        ))}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {message.tableData.map((row, i) => (
-                                        <tr key={i} className="border-b border-gray-100 bg-white hover:bg-gray-50/50 transition-colors">
-                                            {Object.values(row).map((val: any, j) => (
-                                                <td key={j} className="px-5 py-3.5">{val}</td>
-                                            ))}
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
 
                     {/* Clickable Follow-up Suggestions */}
                     {!isUser && followUps.length > 0 && (

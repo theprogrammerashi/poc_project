@@ -14,6 +14,7 @@ import {
   Legend,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
+import { LayoutGrid, AlertCircle, Layers } from "lucide-react";
 
 ChartJS.register(
   CategoryScale,
@@ -26,37 +27,40 @@ ChartJS.register(
   Legend
 );
 
-const HEATMAP_DATA = [
-  { month: "Jan", score: 92 },
-  { month: "Feb", score: 88 },
-  { month: "Mar", score: 79 },
-  { month: "Apr", score: 85 },
-  { month: "May", score: 93 },
-  { month: "Jun", score: 87 },
-  { month: "Jul", score: 76 },
-  { month: "Aug", score: 91 },
-  { month: "Sep", score: 94 },
-  { month: "Oct", score: 89 },
-  { month: "Nov", score: 82 },
-  { month: "Dec", score: 96 },
-];
-
-const LINE_CHART_DATA = [140, 168, 155, 180, 175, 192, 160, 185, 198, 178, 162, 200];
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-const getScoreColor = (score: number) => {
-  if (score >= 90) return "bg-score-excellent text-white";
-  if (score >= 80) return "bg-score-good text-white";
-  if (score >= 70) return "bg-score-needs-attention text-white";
-  return "bg-score-critical text-white";
+// Seeded random data generator so graph looks different per LOB/Program but stable for the same combo
+const generateData = (lob: string, program: string) => {
+  const seed = lob.length * 3 + program.length * 7 + lob.charCodeAt(0) + program.charCodeAt(0);
+  
+  const heatmapData = MONTHS.map((month, i) => {
+     const modifier = Math.sin(seed + i) * 18;
+     const score = Math.max(70, Math.min(100, Math.round(85 + modifier)));
+     return { month, score };
+  });
+
+  const lineData = Array.from({length: 12}).map((_, i) => Math.abs(Math.round(150 + Math.cos(seed * i) * 80 + (seed * 1.5))));
+
+  return { heatmapData, lineData };
 };
+
+const getScoreColor = (score: number) => {
+  if (score >= 95) return "bg-score-excellent text-white";
+  if (score >= 80) return "bg-score-good text-white";
+  return "bg-score-needs-attention text-white";
+};
+
+const LOB_OPTIONS = ["All LOBs", "Commercial", "DSNP", "IFP", "Medicare"];
+const PROGRAM_OPTIONS = ["All Programs", "AIA", "CCS", "CCSO", "UM"];
 
 export default function LivePreviewSection() {
   const [chartRendered, setChartRendered] = useState(false);
+  const [selectedLOB, setSelectedLOB] = useState("Commercial");
+  const [selectedProgram, setSelectedProgram] = useState("AIA");
+  
+  // Dynamically generated static data based on selections
+  const { heatmapData, lineData } = generateData(selectedLOB, selectedProgram);
 
-  // We want the chart to animate ONLY when the section scrolls into view
-  // But Chart.js triggers animation on mount. 
-  // We'll use Framer Motion's onViewportEnter to mount the chart.
   const handleViewportEnter = () => {
     setChartRendered(true);
   };
@@ -67,7 +71,7 @@ export default function LivePreviewSection() {
       {
         fill: true,
         label: "Total Audits",
-        data: LINE_CHART_DATA,
+        data: lineData,
         borderColor: "rgb(232, 64, 12)",
         backgroundColor: "rgba(232, 64, 12, 0.08)",
         borderWidth: 2.5,
@@ -76,7 +80,7 @@ export default function LivePreviewSection() {
         pointBorderWidth: 2,
         pointRadius: 0,
         pointHoverRadius: 6,
-        tension: 0.4, // Smooth curve
+        tension: 0,
       },
     ],
   };
@@ -85,7 +89,7 @@ export default function LivePreviewSection() {
     responsive: true,
     maintainAspectRatio: false,
     animation: {
-      duration: 1200,
+      duration: 800,
       easing: "easeOutQuart" as const,
     },
     hover: {
@@ -109,8 +113,6 @@ export default function LivePreviewSection() {
     scales: {
       y: {
         beginAtZero: false,
-        min: 100,
-        max: 220,
         grid: { color: "rgba(0,0,0,0.04)" },
         border: { display: false },
         ticks: { color: "#9ca3af", font: { family: "var(--font-jakarta)", size: 12 } },
@@ -132,17 +134,8 @@ export default function LivePreviewSection() {
     }
   };
 
-  const tileVariants = {
-    hidden: { opacity: 0, y: 6 },
-    visible: (custom: number) => ({
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.4, delay: custom * 0.07 } // 70ms stagger
-    })
-  };
-
   return (
-    <section className="py-12 px-6 overflow-hidden">
+    <section className="py-12 px-6 overflow-hidden bg-white">
       <motion.div
         initial="hidden"
         whileInView="visible"
@@ -151,7 +144,7 @@ export default function LivePreviewSection() {
         variants={sectionVariants}
         className="max-w-6xl mx-auto"
       >
-        <div className="text-center mb-12">
+        <div className="text-center mb-10">
           <p className="text-exl-orange text-sm font-bold tracking-[0.2em] uppercase mb-4 flex items-center justify-center">
             <span className="w-12 h-px bg-gray-200 mr-4"></span>
             LIVE DATA PREVIEW
@@ -160,6 +153,70 @@ export default function LivePreviewSection() {
           <h2 className="text-4xl md:text-[42px] font-jakarta font-[800] text-text-primary tracking-tight">
             Monthly audit <span className="font-instrument text-exl-orange italic font-normal tracking-normal pr-1">performance</span> at a glance
           </h2>
+        </div>
+
+        {/* Interactive Selectors mimicking Chatbot Pre-Filters */}
+        <div className="bg-white border border-gray-100 shadow-[0_4px_30px_rgba(0,0,0,0.04)] rounded-[24px] p-6 lg:p-8 mb-10">
+          <div className="flex flex-col gap-6">
+            
+            {/* LOB Row */}
+            <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
+              <div className="text-[12px] font-bold tracking-widest text-gray-400 uppercase flex items-center gap-2 w-[160px] flex-shrink-0">
+                <LayoutGrid size={15} /> Line of Business
+              </div>
+              <div className="flex flex-wrap items-center gap-2 md:gap-3">
+                {LOB_OPTIONS.map((lob) => {
+                  const isAll = lob === "All LOBs";
+                  const isActive = selectedLOB === lob;
+                  // Colors mimicking the screenshot
+                  let btnClass = "px-4 py-2.5 rounded-[12px] text-[14px] font-bold transition-all border ";
+                  if (isActive) {
+                     btnClass += "bg-exl-orange text-white border-exl-orange shadow-md shadow-exl-orange/20";
+                  } else {
+                     if (isAll) btnClass += "bg-white text-gray-800 border-gray-200 hover:bg-gray-50";
+                     else btnClass += "bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300";
+                  }
+
+                  return (
+                    <button key={lob} onClick={() => setSelectedLOB(lob)} className={btnClass}>
+                      {isAll && isActive && <LayoutGrid size={14} className="inline mr-2" />}
+                      {!isAll && <span className={`w-2 h-2 rounded-full inline-block mr-2 ${isActive ? 'bg-white' : 'bg-gray-400'}`}></span>}
+                      {lob}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            <div className="h-px bg-gray-100 w-full" />
+
+            {/* Program Row */}
+            <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
+              <div className="text-[12px] font-bold tracking-widest text-gray-400 uppercase flex items-center gap-2 w-[160px] flex-shrink-0">
+                <Layers size={15} /> Program
+              </div>
+              <div className="flex flex-wrap items-center gap-2 md:gap-3">
+                {PROGRAM_OPTIONS.map((prog) => {
+                  const isAll = prog === "All Programs";
+                  const isActive = selectedProgram === prog;
+                  let btnClass = "px-4 py-2.5 rounded-[12px] text-[14px] font-bold transition-all border ";
+                  if (isActive) {
+                     if (isAll) btnClass += "bg-gray-100 text-text-primary border-gray-200";
+                     else btnClass += "bg-orange-50/50 text-exl-orange border-exl-orange/30";
+                  } else {
+                     btnClass += "bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300";
+                  }
+
+                  return (
+                    <button key={prog} onClick={() => setSelectedProgram(prog)} className={btnClass}>
+                      {prog}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+            
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -177,27 +234,21 @@ export default function LivePreviewSection() {
             </div>
 
             <div className="grid grid-cols-6 gap-2 md:gap-3 mb-8">
-              {HEATMAP_DATA.map((data, idx) => (
-                <motion.div
+              {heatmapData.map((data: any) => (
+                <div
                   key={data.month}
-                  custom={idx}
-                  variants={tileVariants}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true, amount: 0 }}
-                  className={`${getScoreColor(data.score)} rounded-xl p-3 flex flex-col items-center justify-center aspect-square shadow-sm transition-transform hover:scale-105`}
+                  className={`${getScoreColor(data.score)} rounded-xl p-3 flex flex-col items-center justify-center aspect-square shadow-sm transition-all duration-500 hover:scale-105`}
                 >
                   <span className="text-lg md:text-xl font-bold font-jakarta">{data.score}%</span>
                   <span className="text-[10px] md:text-xs font-medium opacity-90">{data.month}</span>
-                </motion.div>
+                </div>
               ))}
             </div>
 
             <div className="flex flex-wrap items-center gap-4 text-xs font-medium text-gray-500 mt-auto">
-              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-score-excellent"></span>Excellent (90-100%)</span>
-              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-score-good"></span>Good (80-89%)</span>
-              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-score-needs-attention"></span>Needs Attention (70-79%)</span>
-              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-score-critical"></span>Critical (&lt;70%)</span>
+              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-score-excellent"></span>Excellent (95-100%)</span>
+              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-score-good"></span>Good (80-94%)</span>
+              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-score-needs-attention"></span>Needs Attention (&lt;80%)</span>
             </div>
           </div>
 

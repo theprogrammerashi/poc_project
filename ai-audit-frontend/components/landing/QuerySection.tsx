@@ -6,8 +6,8 @@ import { UserSearch, Search, TrendingUp, Layers, Users, BarChart2 } from "lucide
 
 const QUERIES = [
   {
-    category: "PERFORMANCE",
-    text: "Which employees have the lowest overall audit scores this quarter?",
+    category: "Resource Reallocation",
+    text: "Which Director has the highest volume of Documentation root causes?",
     icon: <UserSearch size={18} />,
     accent: "rgb(232, 64, 12)", // orange
     bgClass: "bg-orange-50",
@@ -15,7 +15,7 @@ const QUERIES = [
   },
   {
     category: "ROOT CAUSE",
-    text: "What is the most common root cause of audit failures in Q3?",
+    text: "Which supervisors consistently manage low-performing employees?",
     icon: <Search size={18} />,
     accent: "rgb(59, 130, 246)", // blue
     bgClass: "bg-blue-50",
@@ -23,7 +23,7 @@ const QUERIES = [
   },
   {
     category: "TRENDING",
-    text: "Show me the quality score trend for Medicare this year",
+    text: "Top 5 underperforming elements within the Business Program UM under Supervisor Sup_19",
     icon: <TrendingUp size={18} />,
     accent: "rgb(21, 128, 61)", // green
     bgClass: "bg-green-50",
@@ -31,7 +31,7 @@ const QUERIES = [
   },
   {
     category: "ELEMENT ANALYSIS",
-    text: "Which audit elements are failing most frequently across the UM program?",
+    text: "Monthly trend of Quality Scores for the Business Program UM under Supervisor Sup_19",
     icon: <Layers size={18} />,
     accent: "rgb(245, 158, 11)", // amber
     bgClass: "bg-amber-50",
@@ -47,7 +47,7 @@ const QUERIES = [
   },
   {
     category: "COMPARISON",
-    text: "Compare HealthTrack vs CareFlow application audit performance",
+    text: "The Quality Gap Analysis: Which Director has the largest performance variance (difference between highest and lowest average scores) among their reporting Managers?",
     icon: <BarChart2 size={18} />,
     accent: "rgb(20, 184, 166)", // teal
     bgClass: "bg-teal-50",
@@ -58,8 +58,8 @@ const QUERIES = [
 export default function QuerySection() {
   const sectionVariants = {
     hidden: { opacity: 0, y: 18 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
       transition: { duration: 0.55, ease: [0.25, 1, 0.5, 1] as const }
     }
@@ -90,6 +90,9 @@ export default function QuerySection() {
           {QUERIES.map((query, idx) => (
             <motion.div
               key={idx}
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent('setHeroQuery', { detail: query.text }));
+              }}
               initial="rest"
               whileHover="hover"
               variants={{
@@ -118,7 +121,7 @@ export default function QuerySection() {
                   {query.category}
                 </span>
               </div>
-              
+
               <h3 className="text-[14px] font-medium text-text-primary leading-snug flex-1">
                 {query.text}
               </h3>

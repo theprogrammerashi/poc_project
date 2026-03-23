@@ -111,7 +111,7 @@ export default function Sidebar({
     if (!isOpen) return null;
 
     return (
-        <aside className="w-[300px] bg-sidebar h-screen flex flex-col transition-all duration-300 relative z-20">
+        <aside className="w-[300px] bg-[#FFF4ED] border-r border-[#FFE4D6] h-screen flex flex-col transition-all duration-300 relative z-20">
             <div className="p-6 flex flex-col gap-8">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -119,13 +119,13 @@ export default function Sidebar({
                             EXL
                         </div>
                         <div className="flex flex-col">
-                            <span className="font-[600] text-white text-[16px] leading-tight tracking-[0.01em]">
+                            <span className="font-[600] text-gray-900 text-[16px] leading-tight tracking-[0.01em]">
                                 Clinical Audit AI
                             </span>
-                            <span className="text-[12px] text-white font-medium mt-0.5">Audit Intelligence Platform</span>
+                            <span className="text-[12px] text-gray-500 font-medium mt-0.5">Audit Intelligence Platform</span>
                         </div>
                     </div>
-                    <button onClick={toggleSidebar} className="ml-2 text-text-secondary hover:text-white md:hidden">
+                    <button onClick={toggleSidebar} className="ml-2 text-gray-400 hover:text-gray-900 md:hidden">
                         <PanelLeftClose size={20} />
                     </button>
                 </div>
@@ -141,9 +141,9 @@ export default function Sidebar({
 
             <div className="flex-1 overflow-y-auto px-6 space-y-8 scrollbar-hide">
                 <div>
-                    <h3 className="text-[11px] font-bold tracking-[0.05em] text-white/80 mb-3 uppercase">Conversations</h3>
+                    <h3 className="text-[11px] font-bold tracking-[0.05em] text-gray-500 mb-3 uppercase">Conversations</h3>
                     {conversations.length === 0 ? (
-                        <p className="text-[13px] text-text-secondary italic px-2">No conversations yet. Start a new one!</p>
+                        <p className="text-[13px] text-gray-400 italic px-2">No conversations yet. Start a new one!</p>
                     ) : (
                         <ul className="space-y-1.5">
                             {conversations.map((conv) => {
@@ -153,16 +153,16 @@ export default function Sidebar({
                                         key={conv.id}
                                         onClick={() => onLoadConversation?.(conv.id)}
                                         className={isActive
-                                            ? "flex items-center gap-3 text-[14px] text-white bg-[#302019] border-l-2 border-l-exl-orange px-4 py-[14px] rounded-r-2xl cursor-pointer relative group transition-colors"
-                                            : "flex items-center gap-3 text-[14px] text-text-secondary hover:text-white hover:bg-white/5 px-4 py-[14px] rounded-2xl cursor-pointer transition-colors group relative"
+                                            ? "flex items-center gap-3 text-[14px] text-[#C5360A] bg-exl-orange/20 border-l-2 border-l-exl-orange px-4 py-[14px] rounded-r-2xl cursor-pointer relative group transition-colors"
+                                            : "flex items-center gap-3 text-[14px] text-gray-600 hover:text-gray-900 hover:bg-white border shadow-sm border-transparent hover:border-gray-100 hover:shadow px-4 py-[14px] rounded-2xl cursor-pointer transition-colors group relative"
                                         }
                                     >
-                                        <div className={isActive ? "w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center flex-shrink-0 border border-white/5" : "w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center flex-shrink-0 group-hover:bg-white/10 transition-colors"}>
-                                            <Activity size={16} className={isActive ? "text-exl-orange" : "text-text-secondary group-hover:text-white transition-colors"} />
+                                        <div className={isActive ? "w-8 h-8 rounded-xl bg-white flex items-center justify-center flex-shrink-0 border border-exl-orange/20" : "w-8 h-8 rounded-xl bg-white flex items-center justify-center flex-shrink-0 border border-gray-100 transition-colors"}>
+                                            <Activity size={16} className={isActive ? "text-exl-orange" : "text-gray-400 group-hover:text-gray-900 transition-colors"} />
                                         </div>
                                         <div className="flex flex-col flex-1 truncate pr-8">
                                             <span className={isActive ? "truncate font-semibold tracking-wide text-[15px]" : "truncate font-medium text-[15px]"}>{conv.title}</span>
-                                            <span className="text-[12px] text-text-secondary mt-0.5 group-hover:text-gray-400 transition-colors">{conv.time}</span>
+                                            <span className="text-[12px] text-gray-400 mt-0.5 group-hover:text-gray-500 transition-colors">{conv.time}</span>
                                         </div>
                                         <button
                                             onClick={(e) => handleDeleteClick(conv.id, e)}
@@ -178,35 +178,35 @@ export default function Sidebar({
                 </div>
 
                 {/* Show SQL / Pre-Filters Toggle */}
-                <div className="pt-4 border-t border-white/5">
+                <div className="pt-4 border-t border-gray-200">
                     <button
                         onClick={() => setShowFilters(!showFilters)}
-                        className={`flex items-center gap-2 text-[14px] font-semibold transition-colors w-full px-2 py-2 rounded-xl text-left ${showFilters ? "text-white" : "text-white/80 hover:text-white"}`}
+                        className={`flex items-center gap-2 text-[14px] font-semibold transition-colors w-full px-3 py-2.5 rounded-xl text-left ${showFilters ? "text-gray-900 bg-white shadow-sm border border-gray-100" : "text-gray-600 hover:text-gray-900 hover:bg-gray-100/50"}`}
                     >
-                        <Search size={16} className={showFilters ? "text-white" : "text-[#3B82F6]"} />
-                        Show generated SQL
+                        <Search size={16} className={showFilters ? "text-exl-orange" : "text-[#3B82F6]"} />
+                        Open Pre-filters
                     </button>
 
                     {/* Pre-Filters Panel */}
                     {showFilters && (
-                        <div className="mt-4 pt-4 border-t border-white/5 flex flex-col gap-4 animate-in slide-in-from-top-2 fade-in duration-200">
-                            <div className="flex items-center gap-2 text-[11px] font-bold tracking-[0.1em] text-white uppercase">
-                                <Search size={12} className="text-white" />
+                        <div className="mt-4 pt-4 border-t border-gray-200 flex flex-col gap-4 animate-in slide-in-from-top-2 fade-in duration-200">
+                            <div className="flex items-center gap-2 text-[11px] font-bold tracking-[0.1em] text-gray-500 uppercase">
+                                <Search size={12} className="text-gray-400" />
                                 PRE-FILTERS
                             </div>
-                            <p className="text-[13px] font-medium text-gray-200 leading-snug pr-4">
+                            <p className="text-[13px] font-medium text-gray-500 leading-snug pr-4">
                                 Narrow dataset before asking questions
                             </p>
 
                             <div className="flex flex-col gap-4">
                                 {/* Quarter Dropdown */}
                                 <div>
-                                    <label className="block text-[13px] font-semibold text-white mb-1.5">Quarter</label>
+                                    <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">Quarter</label>
                                     <div className="relative">
                                         <select
                                             value={quarter}
                                             onChange={(e) => setQuarter(e.target.value)}
-                                            className="w-full appearance-none bg-[#1F222A] border border-white/10 text-[14px] text-white rounded-xl px-3 py-2.5 focus:outline-none focus:border-exl-orange/50 transition-colors"
+                                            className="w-full appearance-none bg-white border border-gray-200 text-[14px] text-gray-900 rounded-xl px-3 py-2.5 focus:outline-none focus:border-exl-orange/50 focus:ring-1 focus:ring-exl-orange/50 transition-colors shadow-sm"
                                         >
                                             <option value="All">All</option>
                                             <option value="Q1">Q1</option>
@@ -220,12 +220,12 @@ export default function Sidebar({
 
                                 {/* Line of Business Dropdown */}
                                 <div>
-                                    <label className="block text-[13px] font-semibold text-white mb-1.5">Line of Business</label>
+                                    <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">Line of Business</label>
                                     <div className="relative">
                                         <select
                                             value={lineOfBusiness}
                                             onChange={(e) => setLineOfBusiness(e.target.value)}
-                                            className="w-full appearance-none bg-[#1F222A] border border-white/10 text-[14px] text-white rounded-xl px-3 py-2.5 focus:outline-none focus:border-exl-orange/50 transition-colors"
+                                            className="w-full appearance-none bg-white border border-gray-200 text-[14px] text-gray-900 rounded-xl px-3 py-2.5 focus:outline-none focus:border-exl-orange/50 focus:ring-1 focus:ring-exl-orange/50 transition-colors shadow-sm"
                                         >
                                             <option value="All">All</option>
                                             <option value="Commercial">Commercial</option>
@@ -239,12 +239,12 @@ export default function Sidebar({
 
                                 {/* Program Dropdown */}
                                 <div>
-                                    <label className="block text-[13px] font-semibold text-white mb-1.5">Program</label>
+                                    <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">Program</label>
                                     <div className="relative">
                                         <select
                                             value={program}
                                             onChange={(e) => setProgram(e.target.value)}
-                                            className="w-full appearance-none bg-[#1F222A] border border-white/10 text-[14px] text-white rounded-xl px-3 py-2.5 focus:outline-none focus:border-exl-orange/50 transition-colors"
+                                            className="w-full appearance-none bg-white border border-gray-200 text-[14px] text-gray-900 rounded-xl px-3 py-2.5 focus:outline-none focus:border-exl-orange/50 focus:ring-1 focus:ring-exl-orange/50 transition-colors shadow-sm"
                                         >
                                             <option value="All">All</option>
                                             <option value="AIA">AIA</option>
@@ -257,12 +257,7 @@ export default function Sidebar({
                                 </div>
                             </div>
 
-                            {/* Active Records Display */}
-                            <div className="bg-[#FFF4ED] text-[#E8400C] rounded-xl p-4 mt-2">
-                                <h4 className="text-[10px] font-bold tracking-[0.05em] text-[#8C2300] mb-1.5 uppercase">Active Records</h4>
-                                <div className="text-[24px] font-bold leading-none mb-1 text-[#E8400C]">Hit Apply</div>
-                                <div className="text-[11px] font-medium text-[#B8330A]">To calculate live matches</div>
-                            </div>
+
 
                             {/* Apply Changes Button */}
                             <button
@@ -285,16 +280,16 @@ export default function Sidebar({
                 </div>
             </div>
 
-            <div className="p-5 mt-auto border-t border-white/5 shadow-[0_-10px_30px_rgba(0,0,0,0.1)]">
+            <div className="p-5 mt-auto bg-[#FFF4ED] border-t border-[#FFE4D6]">
                 <div className="flex items-center gap-3 group">
                     <div className="w-10 h-10 rounded-[14px] bg-exl-orange text-white flex items-center justify-center font-bold text-[14px] shadow-sm tracking-wider">
                         {userProfile.initials}
                     </div>
                     <div className="flex flex-col flex-1">
-                        <span className="text-[15px] font-[600] text-white cursor-pointer hover:underline underline-offset-2 tracking-tight">{userProfile.name}</span>
-                        <span className="text-[12px] text-white/80 font-medium mt-0.5">{userProfile.title}</span>
+                        <span className="text-[15px] font-[600] text-gray-900 cursor-pointer hover:underline underline-offset-2 tracking-tight">{userProfile.name}</span>
+                        <span className="text-[12px] text-gray-500 font-medium mt-0.5">{userProfile.title}</span>
                     </div>
-                    <button className="text-text-secondary hover:text-white transition-colors p-2 hover:bg-white/5 rounded-lg">
+                    <button className="text-gray-400 hover:text-gray-900 transition-colors p-2 hover:bg-gray-100 rounded-lg">
                         <Settings size={18} />
                     </button>
                 </div>

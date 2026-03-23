@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect, useCallback, Suspense } from "react";
 import { Send, Menu, Paperclip, ArrowRight } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import Sidebar from "@/components/Sidebar";
 import ChatMessage, { MessageType } from "@/components/ChatMessage";
 import SuggestedPrompts from "@/components/SuggestedPrompts";
@@ -59,6 +60,7 @@ function ChatContent() {
     setMessages((prev) => [...prev, newUserMsg]);
     setInput("");
     setIsLoading(true);
+    setSidebarOpen(false);
 
     try {
       let submitChatId = activeChatId;
@@ -89,7 +91,8 @@ function ChatContent() {
         content: data.answer || "No response received.",
         sqlQuery: data.sql,
         chartPath: data.chart ? `http://localhost:8000/${data.chart}` : undefined,
-        tableData: data.data && data.data.length > 0 ? data.data.slice(0, 50) : undefined
+        tableData: data.data && data.data.length > 0 ? data.data.slice(0, 50) : undefined,
+        visualizations: data.visualizations || undefined,
       };
       setMessages((prev) => [...prev, botMsg]);
       // Refresh sidebar to show updated title
@@ -108,7 +111,6 @@ function ChatContent() {
   const handleSendForm = (e: React.FormEvent) => {
     e.preventDefault();
     processUserMessage(input);
-    setSidebarOpen(false);
   };
 
   const handleClearSelections = () => {
@@ -144,6 +146,8 @@ function ChatContent() {
           content: msg.content,
           sqlQuery: msg.sql || undefined,
           chartPath: msg.chart ? `http://localhost:8000/${msg.chart}` : undefined,
+          tableData: msg.data && msg.data.length > 0 ? msg.data.slice(0, 50) : undefined,
+          visualizations: msg.visualizations || undefined,
         }));
         setMessages(loadedMessages);
       }
@@ -188,9 +192,9 @@ function ChatContent() {
               <Menu size={20} />
             </button>
             <div className="flex items-center gap-4">
-              <div className="bg-exl-orange text-white rounded-xl w-10 h-10 flex items-center justify-center shadow-md shadow-exl-orange/20">
+              <Link href="/" className="bg-exl-orange text-white rounded-xl w-10 h-10 flex items-center justify-center shadow-md shadow-exl-orange/20 hover:scale-105 transition-transform cursor-pointer">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-              </div>
+              </Link>
               <div className="flex flex-col justify-center">
                 <h1 className="text-[17px] font-bold text-text-primary leading-[1.2] tracking-tight">
                   Clinical Audit AI
@@ -201,6 +205,16 @@ function ChatContent() {
                 </div>
               </div>
             </div>
+          </div>
+          
+          <div className="flex items-center">
+            <button
+                onClick={handleNewConversation}
+                className="hidden md:flex items-center justify-center gap-1.5 bg-[#FFF4ED] hover:bg-exl-orange/20 text-[#C5360A] px-4 py-2.5 rounded-xl transition-colors shadow-sm font-bold text-[13px] border border-[#FFE4D6]"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                New Conversation
+            </button>
           </div>
         </header>
 
