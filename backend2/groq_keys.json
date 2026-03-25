@@ -1,0 +1,16 @@
+{
+  "primary_model": "llama-3.3-70b-versatile",
+  "fallback_models": [
+    "llama-3.1-8b-instant"
+  ],
+  "api_keys": [
+    "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",
+    "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",
+    "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",
+    "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",
+    "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",
+    "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",
+    "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"
+
+  ]
+}

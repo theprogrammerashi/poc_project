@@ -33,10 +33,13 @@ function ChatContent() {
     setAppliedFilters({ quarter, lineOfBusiness, program });
   };
 
-  // Auto-scroll to bottom whenever messages update
+  // Auto-scroll to bottom only when user submits a query (isLoading becomes true), 
+  // preventing it from forcefully jumping down when a massive chart loads, requiring scrolling back up.
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    if (isLoading) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [isLoading, messages.length]);
 
   const searchParams = useSearchParams();
   const initQueryProcessed = useRef(false);
@@ -48,6 +51,11 @@ function ChatContent() {
       initQueryProcessed.current = true;
       setTimeout(() => {
         processUserMessage(q);
+        
+        // Remove 'q' parameter from URL without reloading the page to prevent F5 refresh loops
+        const url = new URL(window.location.href);
+        url.searchParams.delete('q');
+        window.history.replaceState({}, '', url.toString());
       }, 500); 
     }
   }, [searchParams]);
@@ -219,9 +227,9 @@ function ChatContent() {
         </header>
 
         {/* Chat Feed */}
-        <main className="flex-1 overflow-y-auto px-4 md:px-8 pt-4 pb-[130px] w-full mx-auto scroll-smooth bg-chat-bg">
+        <main className="flex-1 overflow-y-auto px-4 md:px-8 pt-4 pb-[130px] w-full scroll-smooth bg-chat-bg">
           {messages.length === 0 ? (
-            <div className="max-w-4xl mx-auto w-full">
+            <div className="w-full max-w-full pr-8">
               <SuggestedPrompts 
                 filters={appliedFilters} 
                 onSuggestionClick={(q) => {
@@ -231,7 +239,7 @@ function ChatContent() {
               />
             </div>
           ) : (
-            <div className="max-w-4xl mx-auto w-full space-y-6 pt-4">
+            <div className="w-full max-w-full pr-8 space-y-6 pt-4">
               {messages.map((msg) => (
                 <ChatMessage key={msg.id} message={msg} onFollowUpClick={(q) => setInput(q)} />
               ))}
@@ -241,8 +249,8 @@ function ChatContent() {
         </main>
 
         {/* Input Area */}
-        <div className="absolute bottom-0 w-full bg-chat-bg pt-2 pb-6 px-4 md:px-8 border-t border-transparent z-10 w-full" style={{ background: 'linear-gradient(to top, var(--color-chat-bg) 80%, transparent 100%)' }}>
-          <div className="max-w-4xl mx-auto">
+        <div className="absolute bottom-0 w-full bg-chat-bg pt-2 pb-6 px-4 md:px-8 border-t border-transparent z-10" style={{ background: 'linear-gradient(to top, var(--color-chat-bg) 80%, transparent 100%)' }}>
+          <div className="w-full max-w-full pr-8">
             <form onSubmit={handleSendForm} className="relative flex items-center bg-surface border border-gray-200 rounded-[20px] shadow-[0_2px_10px_rgba(0,0,0,0.03)] focus-within:border-gray-300 focus-within:shadow-[0_4px_15px_rgba(0,0,0,0.05)] transition-all">
               <input
                 type="text"

@@ -2,7 +2,7 @@ import { User, TableProperties } from "lucide-react";
 import DynamicChart from "./DynamicChart";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 
 export type MessageType = {
     id: string;
@@ -46,10 +46,68 @@ function stripSections(content: string): string {
     return cleaned.trim();
 }
 
+// Interactive Table Component for Markdown
+const MarkdownTable = ({ children, ...props }: any) => {
+    const [limit, setLimit] = useState(5);
+    
+    // Isolate thead and tbody from React.Children
+    const childrenArray = React.Children.toArray(children);
+    const thead = childrenArray.find((c: any) => c.type === 'thead' || c.props?.node?.tagName === 'thead');
+    const tbody = childrenArray.find((c: any) => c.type === 'tbody' || c.props?.node?.tagName === 'tbody');
+    
+    let renderedTbody = tbody;
+    let totalRows = 0;
+    
+    if (tbody && (tbody as any).props && (tbody as any).props.children) {
+        const rows = React.Children.toArray((tbody as any).props.children);
+        totalRows = rows.length;
+        if (totalRows > limit && limit > 0) {
+             renderedTbody = React.cloneElement(tbody as any, {}, rows.slice(0, limit));
+        }
+    }
+    
+    return (
+        <div className="my-6 border border-gray-100 bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] overflow-hidden">
+            <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                 <div className="flex items-center gap-2">
+                      <TableProperties className="w-4 h-4 text-text-secondary" />
+                      <h4 className="text-[11px] font-bold tracking-[0.06em] text-text-secondary uppercase m-0 leading-none">Data Table</h4>
+                 </div>
+                 {totalRows > 5 && (
+                 <div className="flex items-center gap-2">
+                     <span className="text-[11px] text-gray-400 font-medium">Rows:</span>
+                     <select 
+                        value={limit} 
+                        onChange={(e) => setLimit(Number(e.target.value))}
+                        className="text-[11px] font-medium bg-white border border-gray-200 rounded px-1.5 py-0.5 outline-none cursor-pointer hover:border-exl-orange/50 transition-colors"
+                     >
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={15}>15</option>
+                        <option value={100}>All</option>
+                     </select>
+                 </div>
+                 )}
+            </div>
+            <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse" {...props}>
+                    {thead}
+                    {renderedTbody}
+                </table>
+            </div>
+            {totalRows > limit && limit > 0 && (
+               <div className="px-5 py-2.5 bg-gray-50/50 text-center border-t border-gray-100">
+                   <p className="text-[11px] text-gray-500 font-medium tracking-wide">Showing {limit} of {totalRows} rows</p>
+               </div>
+            )}
+        </div>
+    );
+};
+
 export default function ChatMessage({ message, onFollowUpClick }: { message: MessageType; onFollowUpClick?: (q: string) => void }) {
     const isUser = message.role === "user";
-
-    const displayContent = useMemo(() => stripSections(message.content), [message.content]);
+    const fullContent = useMemo(() => stripSections(message.content), [message.content]);
+    const displayContent = fullContent;
     const followUps = useMemo(() => isUser ? [] : extractFollowUps(message.content), [message.content, isUser]);
 
     return (
@@ -80,17 +138,7 @@ export default function ChatMessage({ message, onFollowUpClick }: { message: Mes
                             <ReactMarkdown
                                 remarkPlugins={[remarkGfm]}
                                 components={{
-                                    table: ({node, ...props}) => (
-                                        <div className="my-6 border border-gray-100 bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] overflow-hidden">
-                                            <div className="px-5 py-4 flex items-center gap-2">
-                                                 <TableProperties className="w-4 h-4 text-text-secondary" />
-                                                 <h4 className="text-[11px] font-bold tracking-[0.06em] text-text-secondary uppercase m-0 leading-none">Data Table</h4>
-                                            </div>
-                                            <div className="overflow-x-auto">
-                                                <table className="w-full text-left border-collapse" {...props} />
-                                            </div>
-                                        </div>
-                                    ),
+                                    table: MarkdownTable,
                                     thead: ({node, ...props}) => <thead className="bg-[#FAFAFA]/50 border-y border-gray-100/60" {...props} />,
                                     tr: ({node, ...props}) => <tr className="border-b border-gray-50 last:border-none hover:bg-gray-50/50 transition-colors" {...props} />,
                                     th: ({node, ...props}) => <th className="px-5 py-4 text-[11px] font-bold tracking-[0.05em] text-text-primary uppercase whitespace-nowrap" {...props} />,
@@ -124,7 +172,7 @@ export default function ChatMessage({ message, onFollowUpClick }: { message: Mes
                                         </div>
                                      </div>
                                      <div className="border-t border-gray-50 bg-white px-2 pt-6 pb-4">
-                                        <DynamicChart type={vis.type} data={vis.data} xKey={vis.xKey} yKey={vis.series?.[0]?.key} />
+                                        <DynamicChart type={vis.type} data={vis.data} xKey={vis.xKey} yKey={vis.series?.[0]?.key} layout={vis.layout} scrollable={vis.scrollable} />
                                      </div>
                                 </div>
                             ))}

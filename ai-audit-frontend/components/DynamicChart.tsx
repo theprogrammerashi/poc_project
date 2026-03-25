@@ -6,28 +6,31 @@ import {
     XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 
-type ChartProps = {
-    type: 'bar' | 'line' | 'pie' | 'area' | 'scatter';
+interface DynamicChartProps {
+    type: 'line' | 'bar' | 'area' | 'scatter' | 'pie' | 'donut';
     data: any[];
-    xKey: string;
-    yKey: string;
+    xKey?: string;
+    yKey?: string;
+    layout?: 'horizontal' | 'vertical';
+    scrollable?: boolean;
 };
 
-const COLORS = ['#E8400C', '#2563EB', '#F59E0B', '#10B981', '#7C3AED', '#D946EF', '#EC4899', '#06B6D4'];
+const COLORS = ['#E8400C', '#00639C', '#F7A189', '#63B1E5', '#008298', '#FF6A39', '#8EDCE6', '#2C2C2C'];
 
-export default function DynamicChart({ type, data, xKey, yKey }: ChartProps) {
-    if (!data || data.length === 0) return null;
+export default function DynamicChart({ type, data, xKey = 'name', yKey = 'value', layout = 'horizontal', scrollable = false }: DynamicChartProps) {
+    if (!data || data.length <= 1) return null;
 
     const renderChart = () => {
         switch (type) {
             case 'bar':
+                const isHorizontal = layout === 'horizontal';
                 return (
-                    <BarChart data={data} margin={{ top: 20, right: 10, left: -20, bottom: 0 }} barSize={32}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
-                        <XAxis dataKey={xKey} stroke="#9ca3af" axisLine={false} tickLine={false} dy={10} fontSize={12} tick={{ fill: '#9ca3af' }} />
-                        <YAxis stroke="#9ca3af" axisLine={false} tickLine={false} dx={-10} fontSize={12} tick={{ fill: '#9ca3af' }} />
+                    <BarChart data={data} layout={isHorizontal ? "vertical" : "horizontal"} margin={{ top: 20, right: 20, left: isHorizontal ? 20 : -20, bottom: 0 }} barSize={isHorizontal ? 20 : 32}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={!isHorizontal} horizontal={isHorizontal} />
+                        <XAxis type={isHorizontal ? "number" : "category"} dataKey={isHorizontal ? undefined : xKey} stroke="#9ca3af" axisLine={false} tickLine={false} dy={10} fontSize={12} tick={{ fill: '#9ca3af' }} />
+                        <YAxis type={isHorizontal ? "category" : "number"} dataKey={isHorizontal ? xKey : undefined} stroke="#9ca3af" axisLine={false} tickLine={false} dx={-10} fontSize={12} tick={{ fill: '#9ca3af' }} width={isHorizontal ? 150 : 40} />
                         <Tooltip cursor={{ fill: '#F9FAFB' }} contentStyle={{ backgroundColor: '#ffffff', borderColor: '#E5E7EB', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                        <Bar dataKey={yKey} radius={[4, 4, 0, 0]}>
+                        <Bar dataKey={yKey} radius={isHorizontal ? [0, 4, 4, 0] : [4, 4, 0, 0]}>
                             {data.map((entry, index) => (
                                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                             ))}
@@ -81,6 +84,30 @@ export default function DynamicChart({ type, data, xKey, yKey }: ChartProps) {
                         <Scatter name={yKey} data={data} fill="#E8400C" shape="circle" />
                     </ScatterChart>
                 );
+            case 'pie':
+            case 'donut':
+                const PIE_COLORS = ['#E8400C', '#00639C', '#F7A189', '#63B1E5', '#008298', '#FF6A39', '#8EDCE6'];
+                return (
+                    <PieChart margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
+                        <Pie
+                            data={data}
+                            innerRadius={type === 'donut' ? 60 : 0}
+                            outerRadius={100}
+                            paddingAngle={type === 'donut' ? 3 : 0}
+                            dataKey={yKey as string}
+                            nameKey={xKey as string}
+                            cx="50%"
+                            cy="50%"
+                            label={({ name, percent }) => percent !== undefined ? `${name} ${(percent * 100).toFixed(0)}%` : name}
+                            labelLine={true}
+                        >
+                            {data.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                            ))}
+                        </Pie>
+                        <Tooltip cursor={{ fill: '#F9FAFB' }} contentStyle={{ backgroundColor: '#ffffff', borderColor: '#E5E7EB', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                    </PieChart>
+                );
             default:
                 return null;
         }
@@ -93,11 +120,15 @@ export default function DynamicChart({ type, data, xKey, yKey }: ChartProps) {
         return <div className="w-full h-[260px] mt-2 bg-gray-50/50 animate-pulse rounded-xl" />;
     }
 
+    const chartHeight = scrollable ? Math.max(260, data.length * 40) : '100%';
+
     return (
-        <div className="w-full h-[260px] mt-2">
-            <ResponsiveContainer width="100%" height="100%">
-                {renderChart()}
-            </ResponsiveContainer>
+        <div className={`w-full ${scrollable ? 'overflow-y-auto custom-scrollbar' : ''}`} style={{ height: '260px' }}>
+            <div style={{ height: chartHeight, width: '100%', minHeight: '260px' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                    {renderChart()}
+                </ResponsiveContainer>
+            </div>
         </div>
     );
 }
