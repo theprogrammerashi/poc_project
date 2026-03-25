@@ -798,6 +798,7 @@ def _generate_previous_month_distribution_sql(question, prefilters=None):
     where_clause = _build_where_clause(conditions, params)
     return (
         "WITH previous_month AS ("
+
         'SELECT "year", "month_audited" '
         f"FROM {QUERY_TABLE}{where_clause} "
         'GROUP BY "year", "month_audited" '
@@ -940,12 +941,43 @@ def _extract_time_filters(question):
     return conditions, params
 
 
+def _generate_stddev_sql(question, prefilters=None):
+    lowered = str(question or "").lower()
+    if "standard deviation" not in lowered and "stddev" not in lowered:
+        return None
+        
+    conditions, params = _build_common_conditions(question, prefilters=prefilters)
+    where_clause = _build_where_clause(conditions, params)
+    
+    return (
+        f'WITH supervisor_stats AS ('
+        f'SELECT "supervisor_name", AVG("quality_score_overall") AS "supervisor_avg", '
+        f'STDDEV_SAMP("quality_score_overall") AS "supervisor_stddev" '
+        f'FROM {QUERY_TABLE}{where_clause} '
+        f'GROUP BY "supervisor_name" HAVING STDDEV_SAMP("quality_score_overall") IS NOT NULL'
+        f'), employee_stats AS ('
+        f'SELECT "employee_name", "supervisor_name", "manager_name", "line_of_business", "business_program", '
+        f'MAX("quarter") AS "quarter", MAX("year") AS "year", MAX("month_audited") AS "audit_month", '
+        f'AVG("quality_score_overall") AS "quality_score" '
+        f'FROM {QUERY_TABLE}{where_clause} '
+        f'GROUP BY "employee_name", "supervisor_name", "manager_name", "line_of_business", "business_program"'
+        f') SELECT e."employee_name", ROUND(e."quality_score", 2) AS "quality_score", '
+        f'e."supervisor_name", e."manager_name", e."line_of_business" AS "line_of_business", '
+        f'e."business_program" AS "program", e."quarter", e."year", e."audit_month" '
+        f'FROM employee_stats e '
+        f'INNER JOIN supervisor_stats s ON e."supervisor_name" = s."supervisor_name" '
+        f'WHERE e."quality_score" < (s."supervisor_avg" - 2 * s."supervisor_stddev") '
+        f'ORDER BY e."quality_score" ASC'
+    )
+
+
 def generate_rule_based_sql(question, prefilters=None):
     question_bank_sql = generate_question_bank_sql(question)
     if question_bank_sql:
         return question_bank_sql
 
     specialized_handlers = [
+        _generate_stddev_sql,
         _generate_monthly_trend_sql,
         _generate_underperforming_elements_sql,
         _generate_root_cause_recommendation_sql,

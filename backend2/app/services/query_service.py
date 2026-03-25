@@ -423,7 +423,8 @@ End with exactly this section:
             save_message(chat_id, "assistant", answer, sql, None)
             return _empty_response(answer, sql=sql)
 
-    chart_path, chart_type, x_col, y_col, visualizations = _build_chart_artifacts(df)
+    df_sliced = df.head(10)
+    chart_path, chart_type, x_col, y_col, visualizations = _build_chart_artifacts(df_sliced)
     schema = get_schema_condensed()
 
     # Protect targeted queries: only scrape verbose columns if the dataframe is bloated from SELECT *
@@ -433,7 +434,7 @@ End with exactly this section:
         if len(json_columns) > 8:
             json_columns = json_columns[:8]
         
-    result_records = df[json_columns].head(6).to_dict(orient="records")
+    result_records = df_sliced[json_columns].to_dict(orient="records")
     messages = [
         {
             "role": "system",
