@@ -30,11 +30,7 @@ export default function DynamicChart({ type, data, xKey = 'name', yKey = 'value'
                         <XAxis type={isHorizontal ? "number" : "category"} dataKey={isHorizontal ? undefined : xKey} stroke="#9ca3af" axisLine={false} tickLine={false} dy={10} fontSize={12} tick={{ fill: '#9ca3af' }} />
                         <YAxis type={isHorizontal ? "category" : "number"} dataKey={isHorizontal ? xKey : undefined} stroke="#9ca3af" axisLine={false} tickLine={false} dx={-10} fontSize={12} tick={{ fill: '#9ca3af' }} width={isHorizontal ? 150 : 40} />
                         <Tooltip cursor={{ fill: '#F9FAFB' }} contentStyle={{ backgroundColor: '#ffffff', borderColor: '#E5E7EB', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                        <Bar dataKey={yKey} radius={isHorizontal ? [0, 4, 4, 0] : [4, 4, 0, 0]}>
-                            {data.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                        </Bar>
+                        <Bar dataKey={yKey} fill="#E8400C" radius={isHorizontal ? [0, 4, 4, 0] : [4, 4, 0, 0]} />
                     </BarChart>
                 );
             case 'line':
