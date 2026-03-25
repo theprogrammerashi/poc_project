@@ -94,9 +94,12 @@ def _build_data_table(df, row_limit=8):
         return "_No audits to display._"
 
     preview = df.head(row_limit)
-    raw_headers = [str(col) for col in preview.columns if not str(col).startswith(("element_", "root_case_", "recommendations_"))]
-    if len(raw_headers) > 8:
-        raw_headers = raw_headers[:8]
+    raw_headers = list(preview.columns)
+    
+    if len(raw_headers) > 20:
+        raw_headers = [str(col) for col in preview.columns if not str(col).startswith(("element_", "root_case_", "recommendations_"))]
+        if len(raw_headers) > 8:
+            raw_headers = raw_headers[:8]
         
     formatted_headers = [_format_column_name(col) for col in raw_headers]
     
@@ -423,10 +426,12 @@ End with exactly this section:
     chart_path, chart_type, x_col, y_col, visualizations = _build_chart_artifacts(df)
     schema = get_schema_condensed()
 
-    # Aggressively slice 150+ columns into a tiny payload to prevent history context ballooning on follow-ups
-    json_columns = [col for col in df.columns if not str(col).startswith(("element_", "root_case_", "recommendations_"))]
-    if len(json_columns) > 8:
-        json_columns = json_columns[:8]
+    # Protect targeted queries: only scrape verbose columns if the dataframe is bloated from SELECT *
+    json_columns = list(df.columns)
+    if len(json_columns) > 20:
+        json_columns = [col for col in df.columns if not str(col).startswith(("element_", "root_case_", "recommendations_"))]
+        if len(json_columns) > 8:
+            json_columns = json_columns[:8]
         
     result_records = df[json_columns].head(6).to_dict(orient="records")
     messages = [
